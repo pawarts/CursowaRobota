@@ -115,22 +115,22 @@ switch (navigator.language){
                 month = "Лютого";
                 break
             case 2:
-                month = "Березеня";
+                month = "Березня";
                 break
             case 3:
-                month = "Квітеня";
+                month = "Квітня";
                 break
             case 4:
-                month = "Травеня";
+                month = "Травня";
                 break
             case 5:
-                month = "Червеня";
+                month = "Червня";
                 break
             case 6:
-                month = "Липеня";
+                month = "Липня";
                 break
             case 7:
-                month = "Серпеня";
+                month = "Серпня";
                 break
             case 8:
                 month = "Вересня";

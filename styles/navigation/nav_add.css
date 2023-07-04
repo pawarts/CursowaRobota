@@ -16,6 +16,7 @@
     align-items: center;
     justify-content: center;
     padding-top: 15px;
+    font-size: 25px;
 }
 .open_block{
     display: none;
@@ -24,6 +25,11 @@
 .time_items{
     max-height: 35px;
     overflow-y: scroll;
+}
+
+.time_item{
+    font-size: 17px;
+    background: none;
 }
 
 .time_wrap{

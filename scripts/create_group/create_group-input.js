@@ -1,6 +1,8 @@
 const group_input = document.getElementById("group_input");
 const group_input_btn = document.getElementById("group_input-btn");
 
+const create_group_input = document.getElementById("create_group_input")
+
 group_input.style.display = "none";
 
 //This listener listen input, and in input code change the width. So I think it must it
@@ -26,6 +28,13 @@ group_input.addEventListener("input", () => {
 
 
 //Group input btn, it is button for open the input
+
+window.addEventListener("click", (event) => {
+    if(event.target !== group_input_btn && event.target !== create_group_input){
+        group_input.style.display = "none";
+        group_input_btn.style.display = "inline-flex";
+    }
+})
 
 group_input_btn.addEventListener("click", () => {
     group_input.style.display = "inline-flex";

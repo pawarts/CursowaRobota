@@ -46,6 +46,11 @@
     display: block;
 }
 
+#add_task_btn{
+    border-radius: 6px;
+}
+
+
 /* Add block style */
 
 .add_block{
@@ -94,9 +99,9 @@
 }
 
 .add_block .add_block_items .add_block_item .add_task_input{
-    width: 300px;
-    border-radius: 1px;
-    border: 3px solid #000000;
+    width: 90%;
+    border-radius: 6px;
+    border: 2px solid #000000;
     padding: 6px 0 6px 8px;
 }
 
@@ -167,10 +172,11 @@
 }
 
 .add_block .add_block_items .add_block_item .add_task-btn_wrapper .add_submit{
+    display: inline-block;
     padding: 4px 8px;
     color: #ffff;
     background: #000000;
-    border-radius: 1px;
+    border-radius: 3px;
     cursor: pointer;
 }
 

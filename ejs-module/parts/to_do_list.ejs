@@ -11,19 +11,18 @@
     </ul>
     <ul class="group_items" id="group_items">
 
-        <% group_title_array.forEach((element, index) => {%>
+        <% group_title.forEach((element, index) => {%>
 
-            <%if(index !=0){%>
-                <li class="group_item <% if(id === element.title){%>active<%}%>">
-                    <a href="<%- element.title %>" class="group_link group_text"><%- element.title %></a>
-                </li>
-            <%}%>
+            <li class="group_item <% if(id === element.title){%>active<%}%>">
+                <a href="<%- element.title %>" class="group_link group_text"><%- element.title %></a>
+            </li>
+
         <%}) %>
 
         <li class="group_item">
             <span class="group_link group_text" id="group_input-btn">Створити групу</span>
             <form class="group_input-wrapper" action="/add_group" method="POST" id="group_input">
-                <input class="group_input" type="text" name="group_name">
+                <input class="group_input" maxlength="15" type="text" id="create_group_input" name="group_name">
                 <button type="submit">
                     <img src="../../images/navigation_block/add_noactive.svg" alt="">
                 </button>
@@ -37,28 +36,39 @@
 
 
         <ul class="work_items">
-            <% if(work_array.length != 0){%>
-                <% work_array.forEach( (element) => {%>
-                <li class="work_item">
-                    <p class="work_time"><%- element.time %></p>
-                    <p class="work_time"><%- element.title%></p>
-                </li>
-                <%if(sub_work_object[0].subwork_title != null ){%>
-                    <form action="/update_subwork" class="sub_work_items">
-                        <%sub_work_object.forEach(subwork => {%>
-                            <%if(subwork.id === element.id){%>
-                                <div class="sub_work_item">
-                                    <p class="sub_work_title"><%- subwork.subwork_title %></p>
-                                    <div class="check_wrapper">
-                                        <input class="input_checkbox" type="checkbox"/>
-                                        <div class="checkbox_uncheck"></div>
-                                    </div>
-                                </div>
-                            <%}%>
-                        <%})%>
-                    </form>
-                <% } %>
-            <% }) %>
+            <% if(emptyGroup){%>
+                <% work.forEach( (element) => {%>
+                    <% if(element.group_id === id){ %>
+
+                            <li class="work_item">
+                                <p class="work_time work_times"><%- element.time %></p>
+                                <p class="work_time"><%- element.title%></p>
+                            </li>
+
+                            <%if(element.subworks != 0){%>
+                            <div class="sub_work_items">
+                                <form action="/delete_sub_task" method="POST">
+                                    <%element.subworks.forEach((subwork, index) => {%>
+                                        <input type="hidden" value="<%- element.id_subworks[index]%>" name="subtask_id">
+                                        <div class="sub_work_item">
+                                            <p class="sub_work_title"><%- subwork %></p>
+                                            <div class="check_wrapper">
+                                                <input class="input_checkbox" name="checker" value="<%- element.id_subworks[index]%>" type="checkbox"/>
+                                                <input name="checker" value="off" type="hidden"/>
+                                                <div class="checkbox_uncheck"></div>
+                                            </div>
+                                        </div>
+                                    <%})%>
+                                    <input type="hidden" name="work_id" value="<%- element.id%>">
+                                    <button class="delete_submit">Підтвердити</button>
+                                </form>
+                        </div>
+                            <% } %>
+
+                    <% } %>
+
+                <% }) %>
+
             <% } else {%>
                 <div class="empty_wrapper">
                     <h2>Ця група, поки пуста</h2>

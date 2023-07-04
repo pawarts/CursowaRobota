@@ -1,4 +1,4 @@
-let addSubTaskInput = document.getElementById("add_sub_task_input");
+ let addSubTaskInput = document.getElementById("add_sub_task_input");
 
 //Button in navigation bar
 let subWorkAddBtn = document.getElementById("sub_work_add_btn");
@@ -21,6 +21,7 @@ subWorkAddBtn.addEventListener("click", () => {
         createElementWrapper.prepend(createElementInput);
         createElementInput.classList.add("add_sub_task_input");
         createElementInput.setAttribute("placeholder", "Введіть підзадачу");
+        createElementInput.setAttribute("maxlength", "20");
         createElementInput.setAttribute("name", "sub_task_element");
 
         let createElementClose = document.createElement("p")

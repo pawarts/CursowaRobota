@@ -1,12 +1,12 @@
 <div class="add_block" id="add_block">
     <div class="add_block_items">
         <form action="/add_work" method="POST" class="add_block_item">
-            <input type="text" class="add_task_input" placeholder="Введіть завдання" name="work_title">
+            <input type="text" maxlength="20" class="add_task_input" placeholder="Введіть завдання" name="work_title">
 
             <div class="sub_task_wrapper" id="sub_task_wrapper">
 
                 <div class="sub_task_item" id="add_sub_task_input">
-                    <input type="text" class="add_sub_task_input" placeholder="Введіть підзадачу" name="sub_task_element">
+                    <input type="text" class="add_sub_task_input" maxlength="20" placeholder="Введіть підзадачу" name="sub_task_element">
                     <p class="delete_task">X</p>
                 </div>
             </div>
@@ -17,10 +17,8 @@
 
                         <option class="category_choose-title" id="category_title" value="">Без категорії</option>
 
-                        <%group_title_array.forEach((element, index) =>{%>
-                        <%if(index != 0){%>
+                        <%group_title.forEach((element, index) =>{%>
                             <option class="category_choose-item" value="<%- element.title%>"><%- element.title %></option>
-                        <%}%>
                         <%})%>
                     </select>
                 </div>
@@ -29,12 +27,7 @@
                     <img src="../../images/add_task_icon/calendar.svg" alt="" class="btn_ico">
                     <div class="set_time open_block" id="set_time_block">
                         <div class="time_wrap" id="time_wrap">
-                            <ul class="hour_items time_items">
-                                <input type="text" class="input_time" name="hour">
-                            </ul>
-                            <ul class="minute_items time_items">
-                                <input type="text" class="input_time" name="minute">
-                            </ul>
+                            <input class="time_item" type="time" name="time">
                         </div>
                         <div class="button_wrap">
                             <p class="button_cancel" id="button_cancel">Відмінити</p>

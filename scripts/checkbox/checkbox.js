@@ -69,6 +69,7 @@ const checker = (elementInput, elementChecked, elementText, elementSubWorkItem, 
         elementChecked.classList.toggle("checkbox_check")
         elementText.classList.toggle("checkbox_check_text")
         elementSubWorkItem.classList.toggle("checked")
+
         closeSubWork(taskGroupCount, subWorksGroupCount);
     })
 }
@@ -92,6 +93,8 @@ const loops = () => {
 
         openSubWork(elementWorkItem, elementSubWorkItems);
     }
+
+    console.log(input_check)
 
     for (let i = 0; i < input_check.length; i++){
         elementInput = input_check[i];

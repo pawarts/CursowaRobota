@@ -169,3 +169,14 @@
 .checkbox_check_text{
     text-decoration: line-through;
 }
+
+
+.delete_submit{
+    display: inline-block;
+    padding: 4px 8px;
+    margin-top: 21px;
+    cursor: pointer;
+    background: #000;
+    color: #ffffff;
+    border-radius: 4px;
+}

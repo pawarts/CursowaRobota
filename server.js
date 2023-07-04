@@ -1,5 +1,6 @@
 
 
+
 /*  !!!!!!!   It's just for simulation repair this   !!!!!!!  */
 
 let group_array = [
@@ -104,21 +105,10 @@ let location
 
 //Require ejs-module
 const express = require('express')
-const fs = require('fs')
+const cookieParser = require('cookie-parser');
 const mysql = require('mysql')
 const path = require('path')
-const url = require('url')
-/*const bodyParser = require('body-parser')
-const encoder = bodyParser.urlencoded()*/
 
-
-//Check login or not login
-let login = 'DF'
-let user_id = 1
-
-
-//Connect config to database
-const config = require('./config')
 
 //Server creator
 const app = express()
@@ -141,16 +131,17 @@ app.listen(PORT, (error) => {
 app.use('/styles', express.static(__dirname + '/styles'))
 app.use('/images', express.static(__dirname + '/images'))
 app.use('/scripts', express.static(__dirname + '/scripts'))
-
+app.use(cookieParser());
 
 app.use(express.urlencoded({extended: false}))
 
 //Create connection with database
 const conn = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    databases: 'just_do_it',
-    password: ''
+    host: 'bdggdjleav5h8tiutuau-mysql.services.clever-cloud.com',
+    databases: 'bdggdjleav5h8tiutuau',
+    user: 'ubjexexfaxzdm2zy',
+    password: '4ZH5LIG1Dw1mNTMcwcs1',
+    port: '3306',
 })
 
 conn.connect(err => {
@@ -160,131 +151,94 @@ conn.connect(err => {
 
 //Functions
 
-let group_title_array = [[]];
-
 function request_result (id, res, req, file_name) {
 
-    let id_array = [];
-    let work_array = [[]];
-    let sub_work_object = [[]];
-    //let sub_work = [];
+    let login = req.cookies.name;
+    let user_id = req.cookies.id;
 
-    let query = `SELECT ${`users.login`}, ${`groups.group_title`}, ${`work.work_title`}, ${`work.id`}, ${`work.work_time`}, ${`subwork.subwork_title`}, ${`subwork.work_id`}, ${`subwork.subwork_status`}, ${`work.group_id`} FROM ${`just_do_it.groups`} LEFT JOIN ${`just_do_it.work`} ON ${`groups.id`} = ${`work.group_id`} INNER JOIN ${`just_do_it.users`} ON ${`users.id`} = ${`groups.user_id`} LEFT JOIN ${`just_do_it.subwork`} ON ${`work.id`} = ${`subwork.work_id`} WHERE ${`groups.user_id`} = ${`users.id`} AND ${`users.login`} = 'User' ORDER BY \`work\`.\`work_time\``;
+    console.log(`User: ${login}\nID:${user_id}`)
 
-    conn.query(query, (err, result, field) => {
-        console.time("Sorted time")
-        if(Array.isArray(result) && result.length > 0) {
+    let query = `
+    SELECT GROUP_CONCAT( DISTINCT groups.group_title) AS group_title, groups.id, work.group_id, work.id AS work_id, work.work_title, work.work_time,
+    GROUP_CONCAT(subwork.subwork_title) AS subwork_title, GROUP_CONCAT(subwork.id) AS subwork_id
+    FROM just_do_it.groups LEFT JOIN just_do_it.work ON groups.id = work.group_id
+    LEFT JOIN just_do_it.subwork ON work.id = subwork.work_id
+    WHERE groups.user_id = '${user_id}'
+    GROUP BY groups.group_title, groups.id, work.work_title, work.work_time, work.id 
+    ORDER BY work.work_time
+    `;
 
-            result.forEach(subwork => {
+    let work = [];
+    let group_title = [[]];
 
-                if(sub_work_object.length != 0){
-                    sub_work_object.forEach((item, index) => {
-                        if(id == subwork.group_title && !sub_work_object[0].includes(subwork.subwork_title)){
+    conn.query(query, (err, result) => {
+        if(!err){
+            result.forEach((element) => {
+                if(!group_title[0].includes(element.id)){
+                    group_title.push({
+                        id: element.id,
+                        title: element.group_title,
+                    });
 
-                            sub_work_object[0].push(subwork.subwork_title)
+                    group_title[0].push(element.id)
+                }
 
-                            sub_work_object.push({
-                                "id": subwork.id,
-                                "subwork_title": subwork.subwork_title
-                            })
-                        }
-
-                        /*if(item.subwork_title == sub_work_object[index - 1] && index > 1){
-                            sub_work_object.splice(-1)
-                        }*/
-
-                        /*if(id == subwork.group_title && subwork.subwork_title == undefined && !sub_work.includes(subwork.subwork_title)){
-                            sub_work.push(subwork.subwork_title);
-                        }*/
+                if(!work.includes(element.work_title)){
+                    work.push({
+                        'id': element.work_id,
+                        'group_id': element.group_title,
+                        'title': element.work_title,
+                        'time': element.work_time,
+                        'subworks': element.subwork_title !== null ? element.subwork_title.split(',') : '',
+                        'id_subworks': element.subwork_title !== null ? element.subwork_id.split(',') : '',
                     })
                 }
+            })
 
+            let emptyGroup = false;
 
-            });
+            for(let i = 0; i < work.length; i++){
 
-            result.forEach(element => {
+                const item = work[i]
 
-                if(work_array.length != 0){
+                if((item.group_id === id && item.title !== null) || id === '0'){
+                    if(item.subworks !== [] || id === '0'){
 
-                    work_array.forEach(item => {
-                        if(!work_array[0].includes(element.id)){
-                            if(item.id != element.id && id == element.group_title) {
-
-                                work_array.push({
-                                    "id": element.id,
-                                    "time": element.work_time,
-                                    "title": element.work_title,
-                                });
-
-                                work_array[0].push(element.id);
-                            }
-                        }
-                    });
-
-                } else {
-
-                    if(id == element.group_title) {
-
-                        work_array.push({
-                            "id": element.id,
-                            "time": element.work_time,
-                            "title": element.work_title,
-                        });
-
+                        emptyGroup = true
+                        break
                     }
                 }
+            }
 
-                if(!id_array.includes(element.id)){
-                    id_array.push(element.id);
-                }
+            group_title.splice(0, 1)
 
-                if(!group_title_array[0].includes(element.group_title)){
+            res.cookie('groups', group_title)
+            if(group_title[1] !== null){
+                res.cookie('first_group', group_title[1].title)
+            } else {
+                res.cookie('first_group', '0')
+            }
+            res.cookie('opened_group', id)
 
-                    group_title_array[0].push(element.group_title)
+            const opened_group = req.cookies.opened_group
 
-                    group_title_array.push({
-                        "id" : element.group_id,
-                        "title": element.group_title
-                    });
-                }
+            if(req.cookies.name === undefined || req.cookies.id === undefined){
+                res.redirect(`/log`);
+            } else {
+                res.render(createPath(file_name), {id, group_title, work, emptyGroup, login, opened_group});
+            }
 
-                /*sub_work_object.forEach(subwork => {
-                    //In this line was mistake
-                    if(id == element.group_title && !sub_work.includes(subwork.subwork_title)){
-                        sub_work.push(subwork.subwork_title);
-                    }
-                })*/
-
-
-            });
-
-            /*if (sub_work[0] === undefined){
-                sub_work.splice(0, 1);
-            }*/
-
-            sub_work_object.splice(0, 1);
-            work_array.splice(0, 1);
-
-
-            /*console.log('Group array')
-            console.log(group_title_array)
-            console.log('Work array')
-            console.log(work_array)*/
-            console.log('Subwork object')
-            console.log(sub_work_object)
-
-
-
-            res.render(createPath(file_name), { login, id, group_array, location, result, group_title_array, work_array, sub_work_object });
         } else {
             console.log(err ? err : 'Array is empty')
-            res.end("Error 404")
+            res.redirect("/error_page/error")
         }
-        console.timeEnd("Sorted time")
     })
+
+    return 0;
 }
 
 function subwork(work_id, element){
+    console.log(element)
     let sub_insert_query = `INSERT INTO ${`just_do_it.subwork`} (${`id`}, ${`work_id`}, ${`subwork_title`}, ${`subwork_status`}) VALUES (NULL, ${work_id}, '${element}', 0);`
 
     conn.query(sub_insert_query, (error) => {
@@ -305,18 +259,16 @@ app.post('/log',(req, res) => {
 
     const {name, password} = req.body
 
-    let query = `SELECT  ${`login`}, ${`password`}, ${`id`}  FROM ${`just_do_it.users`} WHERE login =  ? AND password = ?`
-    conn.query(query, [name, password], (err, result, field) =>{
+    let query = `SELECT  *  FROM ${`just_do_it.users`} WHERE login =  ? AND password = ?`
+    conn.query(query, [name, password], (err, result) =>{
         if(Array.isArray(result) && result.length > 0){
-            res.redirect('/0')
-            login = name
-            user_id = result.id
+            res.cookie('name', result[0].login)
+            res.cookie('id', result[0].id)
+            res.redirect(`/`)
         } else {
             console.log(err)
             res.redirect("/log")
         }
-
-        res.end()
     })
 
 
@@ -334,7 +286,7 @@ app.post('/reg', (req, res) => {
     let password = body.password
     let email = body.email
 
-    if(password[0] != password[1]){
+    if(password[0] !== password[1]){
         res.redirect('/reg')
     } else {
         let insert = `INSERT INTO ${`just_do_it.users`} (${`id`}, ${`login`}, ${`password`}, ${`email`}) VALUES (NULL, '${login}', '${password[0]}', '${email}')`
@@ -344,6 +296,7 @@ app.post('/reg', (req, res) => {
                 res.redirect('/log')
             } else {
                 console.log(error)
+                res.end('Щось пішло не так. Поверніться на минулу сторінку.');
             }
         })
     }
@@ -360,92 +313,77 @@ app.get('/exit', (req, res) => {
 
 //Notification page
 app.get('/notification', (req, res) => {
-    res.render(createPath('notification'), { login, group_title_array })
+    const login = req.cookies.name
+    const group_title = req.cookies.groups;
+    const opened_group = req.cookies.opened_group
+    res.render(createPath('notification'), { login, group_title, opened_group })
 })
+
 
 //User page
 app.get('/user', (req, res) => {
-    res.render(createPath('user'), { login, group_title_array });
+    const login = req.cookies.name
+    let group_title = req.cookies.groups;
+    const opened_group = req.cookies.opened_group
+    res.render(createPath('user'), { login, group_title, opened_group });
 })
 
 
 //Main page
 
-
-/* Request test */
-app.get('/request_test', (req, res) => {
-
-    let query = `SELECT *  FROM ${`just_do_it.groups`} WHERE groups.group_title = "Lesson" AND groups.user_id = 1`;
-     //query = `INSERT INTO ${`just_do_it.work`} (${`id`}, ${`group_id`}, ${`work_title`}, ${`work_time`}) VALUES (NULL, '', 'This must delete', '-2:00')`;
-    let select_group_for_id = `SELECT groups.id FROM just_do_it.groups INNER JOIN just_do_it.users ON groups.user_id = users.id WHERE group_title = 'Lesson' AND users.login = 'DF'`
-
-    conn.query(select_group_for_id, (err, res) => {
-        if(!err) {
-
-            console.log(res[0].id)
-        } else {
-            console.log('Line 437:\n' + err)
-        }
-    })
-    conn.query(query, (err, result, field) =>{
-        if(Array.isArray(result) && result.length > 0) {
-        } else {
-            console.log(err)
-        }
-        res.end(`${err ? err : result}`)
-    })
-
-})
-
-app.get('/:id', (req, res) => {
+app.get('/:id', async(req, res) => {
     const id = req.params.id;
     location = '';
 
-    request_result(id, res, req, 'index');
-
-    console.log("Index")
-})
+    request_result(id, res, req, 'index');})
 
 app.get('/', (req, res) => {
-    res.redirect(`/0`);
+
+    if(req.cookies.name === undefined){
+        res.redirect(`/log`);
+    } else {
+        res.redirect(`/${req.cookies.first_group}`);
+    }
 })
 
 //Search page
 
-app.get('/search/:id', (req, res) => {
-    let id = req.params.id
-    location = 'search/'
+app.get('/search/:id', async (req, res) => {
+    let id = req.params.id;
+    location = 'search/';
 
     request_result(id, res, req, 'search');
 })
 
 //Add work url
 
-app.post('/add_work', (req, res) => {
+app.post('/add_work', async(req, res) =>{
 
-    let body = req.body
+    let body = req.body;
 
     const work_title = body.work_title;
     const work_group = body.group;
 
-    console.log("ID:" + work_group)
+    console.log("ID:" + work_group);
 
-    const work_hour = body.hour
-    const work_minute = body.minute;
+    const work_time = body.time;
 
-    let group_id
+    let group_id;
 
-    const work_time = `${work_hour}:${work_minute}`;
+    console.log(body.sub_task_element)
 
-    let select_group_for_id = `SELECT groups.id FROM just_do_it.groups INNER JOIN just_do_it.users ON groups.user_id = users.id WHERE groups.group_title= '${work_group}' AND users.login = 'DF'`
+    const user_id = req.cookies.id;
+    let subtask = body.sub_task_element;
+
+    let select_group_for_id = `SELECT groups.id FROM just_do_it.groups INNER JOIN just_do_it.users ON groups.user_id = users.id WHERE groups.group_title = '${work_group}' AND users.id = '${user_id}'`;
 
     conn.query(select_group_for_id, (err, result) => {
-        group_id = result[0].id
-        if(!err){
+        group_id = result[0].id;
+        if(!err && group_id !== undefined){
 
             let query = `INSERT INTO ${`just_do_it.work`} (${`id`}, ${`group_id`}, ${`work_title`}, ${`work_time`}) VALUES (NULL, ${group_id}, '${work_title}', '${work_time}');`;
 
-            conn.query(query, (error, result) => {
+            conn.query(query, (error) => {
                 if(!error){
                     console.log("All ok")
                     res.redirect(`/0`);
@@ -453,55 +391,109 @@ app.post('/add_work', (req, res) => {
                     console.log(error)
                 }
             })
+
+            if(subtask){
+                let select_query = `SELECT id FROM ${`just_do_it.work`} ORDER BY \`work\`.\`id\` DESC LIMIT 1`;
+                let work_id = 0;
+                conn.query(select_query, (error, result) => {
+                    if(error){
+                        console.log(error)
+                    }
+                    work_id = result[0].id;
+                    console.log(Array(body.sub_task_element))
+                    if(Array.isArray(body.sub_task_element)){
+
+                        body.sub_task_element.forEach(elem => {
+                            subwork(work_id, elem);
+                        })
+
+                    } else {
+                        subwork(work_id, body.sub_task_element);
+                    }
+
+
+                })
+            }
+
         } else {
             console.log(err)
         }
     })
-    su
-    let select_query = `SELECT \`id\` FROM ${`just_do_it.work`} ORDER BY \`work\`.\`id\` DESC LIMIT 1`;
-    let work_id = 0;
-
-    let subtask = body.sub_task_element;
-
-    console.log("Sub: " + subtask)
-
-    if(subtask){
-        conn.query(select_query, (error, result) => {
-            if(error){
-                console.log(error)
-            }
-            work_id = result[0].id;
-
-            if(!String(subtask)){
-
-                subtask.forEach(elem => {
-                    subwork(work_id, elem);
-                })
-            } else {
-                subwork(work_id, subtask);
-            }
-
-
-        })
-    }
 })
 
 //Add group listener
 
-app.post('/add_group', (req, res) => {
+ app.post('/add_group', (req, res) => {
     let body = req.body;
 
     let group_title = body.group_name;
 
-    console.log(user_id)
+    let user_id = req.cookies.id
 
     let query = `INSERT INTO ${`just_do_it.groups`} (${`id`}, ${`user_id`}, ${`group_title`}) VALUES (NULL, ${user_id}, '${group_title}')`;
     conn.query(query, (err) => {
         if(err){
             console.log(err);
+        } else {
+            res.redirect('/0')
         }
     })
-    res.end("OK")
+})
+
+//Delete subtask and if it's need all task
+
+app.post('/delete_sub_task', (req, res) => {
+    const body = req.body;
+
+    const subtask_id = body.subtask_id;
+    const checker = body.checker;
+
+    let delete_queue = []
+    /*if(!Array.isArray(subtask_id)){
+        delete_queue = Array.of(subtask_id)
+    }*/
+    console.log(delete_queue)
+    console.log(subtask_id)
+
+
+    checker.forEach(element => {
+        if(subtask_id.includes(element)){
+            delete_queue.push(element)
+        }
+    })
+
+    if(!Array.isArray(subtask_id) || subtask_id.length - delete_queue.length === 0){
+        console.log('reb')
+        const work_id = body.work_id;
+        const delete_query = `DELETE FROM \`just_do_it\`.\`work\` WHERE \`work\`.\`id\` = ${work_id}`
+
+        conn.query(delete_query, (error, result) => {
+            if(error){
+                res.redirect('error_page/error')
+            }
+        })
+    }
+
+    delete_queue.forEach(element =>{
+
+        Number(element)
+
+        const delete_query = `DELETE FROM \`just_do_it\`.\`subwork\` WHERE \`subwork\`.\`id\` = ${element}`
+
+        conn.query(delete_query, (error, result) => {
+            if(error){
+                console.log(error)
+                res.redirect('/error_page/error')
+            }
+        })
+    })
+
+    console.log(subtask_id.length - 1 === 0)
+    console.log(subtask_id.length - delete_queue.length === 0)
+
+    res.redirect('/0')
+
+    console.log(delete_queue)
 })
 
 
